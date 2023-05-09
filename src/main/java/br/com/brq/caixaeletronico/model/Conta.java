@@ -1,9 +1,7 @@
 package br.com.brq.caixaeletronico.model;
 
-import br.com.brq.caixaeletronico.conta.DadosCriacaoConta;
+import br.com.brq.caixaeletronico.controller.request.DadosCriacaoConta;
 import jakarta.persistence.*;
-
-import java.math.BigDecimal;
 
 @Embeddable
 public class Conta {

@@ -1,6 +1,6 @@
 package br.com.brq.caixaeletronico.model;
 
-import br.com.brq.caixaeletronico.cliente.DadosClienteCadastro;
+import br.com.brq.caixaeletronico.controller.request.DadosClienteCadastro;
 import jakarta.persistence.*;
 
 @Table(name="Clientes")

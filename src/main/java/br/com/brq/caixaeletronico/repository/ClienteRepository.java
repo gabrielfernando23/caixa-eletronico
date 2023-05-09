@@ -1,4 +1,4 @@
-package br.com.brq.caixaeletronico.cliente;
+package br.com.brq.caixaeletronico.repository;
 
 import br.com.brq.caixaeletronico.model.Cliente;
 import org.springframework.data.domain.Page;

@@ -1,4 +1,4 @@
-package br.com.brq.caixaeletronico.conta;
+package br.com.brq.caixaeletronico.controller.request;
 
 import java.math.BigDecimal;
 

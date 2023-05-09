@@ -1,4 +1,4 @@
-package br.com.brq.caixaeletronico.caixa;
+package br.com.brq.caixaeletronico.repository;
 
 import br.com.brq.caixaeletronico.model.CaixaEletronico;
 import org.springframework.data.jpa.repository.JpaRepository;

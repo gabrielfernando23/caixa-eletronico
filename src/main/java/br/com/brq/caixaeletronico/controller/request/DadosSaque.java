@@ -1,9 +1,14 @@
-package br.com.brq.caixaeletronico.cliente;
+package br.com.brq.caixaeletronico.controller.request;
 
+
+import jakarta.validation.constraints.NotNull;
 
 public record DadosSaque(
+        @NotNull
         Long idCliente,
+        @NotNull
         Long idCaixa,
+        @NotNull
         Double valor
 
 ) {

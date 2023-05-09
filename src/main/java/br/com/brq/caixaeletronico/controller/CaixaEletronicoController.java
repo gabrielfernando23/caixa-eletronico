@@ -1,10 +1,17 @@
 package br.com.brq.caixaeletronico.controller;
 
-import br.com.brq.caixaeletronico.caixa.CaixaEletronicoRepository;
-import br.com.brq.caixaeletronico.caixa.DadosAtualizarNotas;
-import br.com.brq.caixaeletronico.caixa.DadosCadastroCaixa;
-import br.com.brq.caixaeletronico.caixa.DadosDetalhamentoCaixa;
+import br.com.brq.caixaeletronico.controller.request.DadosDeposito;
+import br.com.brq.caixaeletronico.controller.request.DadosSaque;
+import br.com.brq.caixaeletronico.controller.response.DadosDetalhamentoCliente;
+import br.com.brq.caixaeletronico.controller.response.DadosDetalhamentoSaque;
+import br.com.brq.caixaeletronico.model.Cliente;
+import br.com.brq.caixaeletronico.controller.request.DadosAtualizarNotas;
+import br.com.brq.caixaeletronico.controller.request.DadosCadastroCaixa;
+import br.com.brq.caixaeletronico.controller.response.DadosDetalhamentoCaixa;
 import br.com.brq.caixaeletronico.model.CaixaEletronico;
+import br.com.brq.caixaeletronico.services.CaixaEletronicoServices;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,30 +22,41 @@ import org.springframework.web.util.UriComponentsBuilder;
 @RequestMapping("/caixa")
 public class CaixaEletronicoController {
     @Autowired
-    CaixaEletronicoRepository repository;
+    CaixaEletronicoServices services;
 
     @PostMapping("/cadastrar")
-    public ResponseEntity cadastrarCaixa(@RequestBody DadosCadastroCaixa dados,
+    public ResponseEntity cadastrarCaixa(@RequestBody @Valid DadosCadastroCaixa dados,
                                          UriComponentsBuilder uriBuilder) {
-        CaixaEletronico caixa = new CaixaEletronico(dados.NotasDe100(),
-                dados.NotasDe50(),dados.NotasDe20(),dados.NotasDe10());
-        repository.save(caixa);
+        CaixaEletronico caixa = services.cadastrarCaixa(dados);
         var uri = uriBuilder.path("/caixa/{id}").buildAndExpand(caixa.getId()).toUri();
         return ResponseEntity.created(uri).body(new DadosDetalhamentoCaixa(caixa));
     }
 
     @GetMapping("/notas/{id}")
-    public ResponseEntity mostrarNotas(@PathVariable Long id) {
-        var caixa = repository.findById(id).map(DadosDetalhamentoCaixa::new);
-        return ResponseEntity.ok(caixa);
+    public ResponseEntity mostrarNotas(@PathVariable @Valid @NotNull Long id) {
+        return ResponseEntity.ok(services.mostrarNotas(id));
     }
 
     @PutMapping
     @Transactional
-    public ResponseEntity atualizarNotas(@RequestBody DadosAtualizarNotas dados) {
-    CaixaEletronico caixa = repository.getReferenceById(dados.id());
-    caixa.atualizarInformacoes(dados);
+    public ResponseEntity atualizarNotas(@RequestBody @Valid DadosAtualizarNotas dados) {
+
+    CaixaEletronico caixa = services.atualizarNotas(dados);
     return ResponseEntity.ok(new DadosDetalhamentoCaixa(caixa));
+    }
+
+    @PutMapping("/sacar")
+    @Transactional
+    public ResponseEntity sacar(@RequestBody @Valid DadosSaque dados) {
+        DadosDetalhamentoSaque dadosSaque = services.sacar(dados);
+        return ResponseEntity.ok(dadosSaque);
+    }
+
+    @PostMapping("/depositar")
+    @Transactional
+    public ResponseEntity depositar(@RequestBody @Valid DadosDeposito dados) {
+        Cliente cliente = services.depositar(dados);
+        return ResponseEntity.ok(new DadosDetalhamentoCliente(cliente));
     }
 
 }

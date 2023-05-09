@@ -1,6 +1,6 @@
-package br.com.brq.caixaeletronico.cliente;
+package br.com.brq.caixaeletronico.controller.response;
 
-import br.com.brq.caixaeletronico.conta.DadosDetalhamentoConta;
+import br.com.brq.caixaeletronico.controller.response.DadosDetalhamentoConta;
 import br.com.brq.caixaeletronico.model.Cliente;
 
 public record DadosListagemCliente(

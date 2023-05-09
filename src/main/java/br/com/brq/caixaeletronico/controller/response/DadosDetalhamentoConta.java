@@ -1,4 +1,4 @@
-package br.com.brq.caixaeletronico.conta;
+package br.com.brq.caixaeletronico.controller.response;
 
 import br.com.brq.caixaeletronico.model.Cliente;
 import br.com.brq.caixaeletronico.model.Conta;
