@@ -249,6 +249,7 @@ class CaixaEletronicoControllerTest {
         assertEquals(2,responseListagemCaixa.getBody().NotasDe50());
     }
 
+
     @Test
     @DisplayName("Deveria devolver código http 200 e o menor número de notas possíveis")
     void sacarCenario03() {
@@ -292,19 +293,12 @@ class CaixaEletronicoControllerTest {
                 DadosDetalhamentoSaque.class
         );
 
-        Long id = responseCadastroCaixa.getBody().id();
-
-        ResponseEntity<DadosDetalhamentoCaixa> responseListagemCaixa = restTemplate.exchange(
-                "http" +
-                        "://localhost:8080/caixa/notas/" + id, HttpMethod.GET,null,
-                DadosDetalhamentoCaixa.class);
-
         assertEquals(HttpStatus.OK,responseSaque.getStatusCode());
         assertEquals(190.0,responseSaque.getBody().ValorSaque());
-        assertEquals(1,responseListagemCaixa.getBody().NotasDe100());
-        assertEquals(1,responseListagemCaixa.getBody().NotasDe50());
-        assertEquals(0,responseListagemCaixa.getBody().NotasDe20());
-        assertEquals(1,responseListagemCaixa.getBody().NotasDe10());
+        assertEquals(1,responseSaque.getBody().quantiaNotas100Entregues());
+        assertEquals(1,responseSaque.getBody().quantiaNotas50Entregues());
+        assertEquals(1,responseSaque.getBody().quantiaNotas20Entregues());
+        assertEquals(2,responseSaque.getBody().quantiaNotas10Entregues());
     }
 
     @Test

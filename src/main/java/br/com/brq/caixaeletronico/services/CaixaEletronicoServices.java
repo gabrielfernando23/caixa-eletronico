@@ -15,7 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -108,8 +110,7 @@ public class CaixaEletronicoServices {
         Integer notasde10Entregues = mapNotas.get("notasDe10Entregues");
         if (notasde100Entregues == null){
             notasde100Entregues = 0;
-        }
-        if (notasde50Entregues == null){
+        }if (notasde50Entregues == null){
             notasde50Entregues = 0;
         }if (notasde20Entregues == null){
             notasde20Entregues = 0;
@@ -123,8 +124,12 @@ public class CaixaEletronicoServices {
         if (cliente.getConta().getSaldo() >= valor){
             if (valor <= caixa.getSaldoTotal()) {
                 if (valor % 10 ==0){
-                    Map<String,Integer> mapNotas = new HashMap<>();
-                    mapNotas = saque100(caixa,valor,mapNotas);
+                    List<Integer> notas = new ArrayList<>(4);
+                    notas.add(100);
+                    notas.add(50);
+                    notas.add(20);
+                    notas.add(10);
+                    Map<String,Integer> mapNotas = saque(caixa,valor,notas);
                     caixa.calcularSaldo();
                     cliente.getConta().sacar(valor);
                     return mapNotas;
@@ -139,160 +144,69 @@ public class CaixaEletronicoServices {
         }
     }
 
-
-    public Map<String,Integer> saque100(CaixaEletronico caixa,double valor, Map mapNotas) {
-        int qtdNotasNecessarias = (int) (valor / 100);
-        Integer qtdNotasAntesDoSaque = caixa.getNotasDe100();
-        if (caixa.getNotasDe100() > 0 && valor % 100 == 0) {
-            if (qtdNotasNecessarias <= caixa.getNotasDe100()){
-                caixa.setNotasDe100(caixa.getNotasDe100() - qtdNotasNecessarias);
-                caixa.calcularSaldo();
-                Integer notasDe100Entregues = qtdNotasAntesDoSaque - caixa.getNotasDe100();
-                mapNotas.put("notasDe100Entregues",notasDe100Entregues);
-                return mapNotas;
-            }
-            else {
-                valor -= (caixa.getNotasDe100() * 100);
-                caixa.calcularSaldo();
-                caixa.setNotasDe100(0);
-                Integer notasDe100Entregues = qtdNotasAntesDoSaque - caixa.getNotasDe100();
-                mapNotas.put("notasDe100Entregues",notasDe100Entregues);
-                saque50(valor,caixa,mapNotas);
-                return mapNotas;
-            }
-        }else if(valor > 100 && caixa.getNotasDe100() > 0 && (caixa.getNotasDe100() <= (valor / 100))) {
-            valor -= (caixa.getNotasDe100() * 100);
-            caixa.calcularSaldo();
-            caixa.setNotasDe100(0);
-            Integer notasDe100Entregues = qtdNotasAntesDoSaque - caixa.getNotasDe100();
-            mapNotas.put("notasDe100Entregues",notasDe100Entregues);
-            saque50(valor,caixa,mapNotas);
-            return mapNotas;
-        }else if(valor > 100 && caixa.getNotasDe100() > 0 && (caixa.getNotasDe100() >= (valor / 100))){
-            caixa.setNotasDe100(caixa.getNotasDe100() - qtdNotasNecessarias);
-            valor -= (qtdNotasNecessarias * 100);
-            caixa.calcularSaldo();
-            Integer notasDe100Entregues = qtdNotasAntesDoSaque - caixa.getNotasDe100();
-            mapNotas.put("notasDe100Entregues",notasDe100Entregues);
-            saque50(valor,caixa,mapNotas);
-            return mapNotas;
-        }
-        else{
-            mapNotas.put("notasDe100Entregues",0);
-            saque50(valor,caixa,mapNotas);
-            return mapNotas;
-        }
-    }
-
-    private Map<String,Integer> saque50(double valor,CaixaEletronico caixa,Map mapNotas) {
-        int qtdNotasNecessarias = (int) (valor / 50);
-        Integer qtdNotasAntesDoSaque = caixa.getNotasDe50();
-        if (caixa.getNotasDe50() > 0 && valor % 50 == 0 && valor > 0) {
-            if (qtdNotasNecessarias <= caixa.getNotasDe50()) {
-                caixa.setNotasDe50(caixa.getNotasDe50() - qtdNotasNecessarias);
-                caixa.calcularSaldo();
-                Integer notasDe50Entregues = qtdNotasAntesDoSaque - caixa.getNotasDe50();
-                mapNotas.put("notasDe50Entregues",notasDe50Entregues);
-                return mapNotas;
-            } else {
-                valor -= (caixa.getNotasDe50() * 50);
-                caixa.calcularSaldo();
-                caixa.setNotasDe50(0);
-                Integer notasDe50Entregues = qtdNotasAntesDoSaque - caixa.getNotasDe50();
-                mapNotas.put("notasDe50Entregues",notasDe50Entregues);
-                saque20(valor,caixa,mapNotas);
-                return mapNotas;
-            }
-
-        }else if(valor > 50 && caixa.getNotasDe50() > 0 && (caixa.getNotasDe50() <= (valor / 50))) {
-            valor -= (caixa.getNotasDe50() * 50);
-            caixa.calcularSaldo();
-            caixa.setNotasDe50(0);
-            Integer notasDe50Entregues = qtdNotasAntesDoSaque - qtdNotasNecessarias;
-            mapNotas.put("notasDe50Entregues",notasDe50Entregues);
-            saque20(valor,caixa,mapNotas);
-            return mapNotas;
-        }else if(valor > 50 && caixa.getNotasDe50() > 0 && (caixa.getNotasDe50() >= (valor / 50))){
-            caixa.setNotasDe50(caixa.getNotasDe50()- qtdNotasNecessarias);
-            valor -= (qtdNotasNecessarias * 50);
-            caixa.calcularSaldo();
-            Integer notasDe50Entregues = qtdNotasAntesDoSaque - caixa.getNotasDe50();
-            mapNotas.put("notasDe50Entregues",notasDe50Entregues);
-            saque20(valor,caixa,mapNotas);
-            return mapNotas;
-        }
-        else {
-            mapNotas.put("notasDe50Entregues",0);
-            saque20(valor,caixa,mapNotas);
-            return mapNotas;
-        }
-    }
-
-    private Map<String,Integer> saque20(double valor, CaixaEletronico caixa,Map mapNotas) {
-        int qtdNotasNecessarias = (int) (valor / 20);
-        Integer qtdNotasAntesDoSaque = caixa.getNotasDe20();
-        if (caixa.getNotasDe20() > 0 && valor % 20 == 0 && valor > 0) {
-            if (qtdNotasNecessarias <= caixa.getNotasDe20()) {
-                caixa.setNotasDe20(caixa.getNotasDe20()- qtdNotasNecessarias);
-                caixa.calcularSaldo();
-                Integer notasDe20Entregues = qtdNotasAntesDoSaque - caixa.getNotasDe20();
-                mapNotas.put("notasDe20Entregues",notasDe20Entregues);
-                return mapNotas;
-            } else {
-                valor -= (caixa.getNotasDe20() * 20);
-                caixa.calcularSaldo();
-                caixa.setNotasDe20(0);
-                Integer notasDe20Entregues = qtdNotasAntesDoSaque - caixa.getNotasDe20();
-                mapNotas.put("notasDe20Entregues",notasDe20Entregues);
-                saque10(valor,caixa,mapNotas);
-                return mapNotas;
-            }
-        }else if(valor > 20 && caixa.getNotasDe20() > 0 && (caixa.getNotasDe20() <= (valor / 20))) {
-            valor -= (caixa.getNotasDe20() * 20);
-            caixa.calcularSaldo();
-            caixa.setNotasDe20(0);
-            Integer notasDe20Entregues = qtdNotasAntesDoSaque - qtdNotasNecessarias;
-            mapNotas.put("notasDe20Entregues",notasDe20Entregues);
-            saque10(valor,caixa,mapNotas);
-            return mapNotas;
-        }else if(valor > 20 && caixa.getNotasDe20() > 0 && (caixa.getNotasDe20() >= (valor / 20))){
-            caixa.setNotasDe20(caixa.getNotasDe20()- qtdNotasNecessarias);
-            valor -= (qtdNotasNecessarias * 20);
-            caixa.calcularSaldo();
-            Integer notasDe20Entregues = qtdNotasAntesDoSaque - caixa.getNotasDe20();
-            mapNotas.put("notasDe20Entregues",notasDe20Entregues);
-            saque10(valor,caixa,mapNotas);
-            return mapNotas;
-        }
-        else {
-            mapNotas.put("notasDe20Entregues",0);
-            saque10(valor,caixa,mapNotas);
-            return mapNotas;
-        }
-    }
-
-    private Map<String,Integer> saque10(double valor,CaixaEletronico caixa,Map mapNotas) {
-        int qtdNotasNecessarias = (int) (valor / 10);
-        Integer qtdNotasAntesDoSaque = caixa.getNotasDe10();
-        if (caixa.getNotasDe10() > 0 && valor % 10 == 0 && valor > 0) {
-            if (qtdNotasNecessarias <= caixa.getNotasDe10()){
-                caixa.setNotasDe10(caixa.getNotasDe10()- qtdNotasNecessarias);
-                caixa.calcularSaldo();
-                Integer notasDe10Entregues = qtdNotasAntesDoSaque - caixa.getNotasDe10();
-                mapNotas.put("notasDe10Entregues",notasDe10Entregues);
-                return mapNotas;
-            }else {
-                caixa.setNotasDe10(0);
-                caixa.calcularSaldo();
-                Integer notasDe10Entregues = qtdNotasAntesDoSaque - caixa.getNotasDe10();
-                mapNotas.put("notasDe10Entregues",notasDe10Entregues);
-                return mapNotas;
+    private Map<String, Integer> saque(CaixaEletronico caixa, Double valor, List<Integer> notas) {
+        Map<String,Integer> mapNotas = new HashMap<>();
+        Double valorSaque = valor;
+        for (int i = 0; i < notas.size(); i++){
+            if (valorSaque > 9){
+                int qtdNotasNecessarias = (int) (valorSaque / notas.get(i));
+                Integer qtdNotasAntesDoSaque = verificarGet(caixa,notas.get(i));
+                if (verificarGet(caixa,notas.get(i)) > 0 && valorSaque % notas.get(i) == 0) {
+                    if (qtdNotasNecessarias <= verificarGet(caixa,notas.get(i))){
+                        Integer qtdNotas = (verificarGet(caixa,notas.get(i)) - qtdNotasNecessarias);
+                        verificarSet(notas.get(i),caixa,qtdNotas);
+                        caixa.calcularSaldo();
+                        valorSaque -= (qtdNotasAntesDoSaque - verificarGet(caixa,notas.get(i))) * notas.get(i);
+                        mapNotas.put("notasDe"+notas.get(i)+"Entregues",qtdNotasAntesDoSaque - verificarGet(caixa,notas.get(i)));
+                    }
+                    else {
+                        verificarSet(notas.get(i),caixa,0);
+                        valorSaque -= (qtdNotasAntesDoSaque - verificarGet(caixa,notas.get(i))) * notas.get(i);
+                        mapNotas.put("notasDe"+notas.get(i)+"Entregues",qtdNotasAntesDoSaque - verificarGet(caixa,notas.get(i)));
+                    }
+                }else if(valorSaque > notas.get(i) && verificarGet(caixa,notas.get(i)) > 0 && (verificarGet(caixa,notas.get(i)) <= qtdNotasNecessarias)) {
+                    verificarSet(notas.get(i),caixa,0);
+                    valorSaque -= (qtdNotasNecessarias * notas.get(i));
+                    mapNotas.put("notasDe"+notas.get(i)+"Entregues",qtdNotasAntesDoSaque - verificarGet(caixa,notas.get(i)));
+                }else if(valorSaque > notas.get(i) && verificarGet(caixa,notas.get(i)) > 0 && (verificarGet(caixa,notas.get(i)) >= qtdNotasNecessarias)){
+                    Integer qtdNotas = (verificarGet(caixa,notas.get(i)) - qtdNotasNecessarias);
+                    verificarSet(notas.get(i),caixa,qtdNotas);
+                    valorSaque -= (qtdNotasNecessarias * notas.get(i));
+                    caixa.calcularSaldo();
+                    mapNotas.put("notasDe"+notas.get(i)+"Entregues",qtdNotasAntesDoSaque - verificarGet(caixa,notas.get(i)));
+                }
+                else{
+                    mapNotas.put("notasDe"+notas.get(i)+"Entregues",0);
+                }
             }
         }
-        mapNotas.put("notasDe10Entregues",0);
         return mapNotas;
     }
 
+    private void verificarSet(Integer nota,CaixaEletronico caixa, Integer qtdNotas) {
+        if (nota == 100){
+            caixa.setNotasDe100(qtdNotas);
+        }if (nota == 50){
+            caixa.setNotasDe50(qtdNotas);
+        }if (nota == 20){
+            caixa.setNotasDe20(qtdNotas);
+        }if (nota == 10){
+            caixa.setNotasDe10(qtdNotas);
+        }
+    }
+
+    private Integer verificarGet(CaixaEletronico caixa,Integer num) {
+        if (num == 100){
+            return caixa.getNotasDe100();
+        }if (num == 50){
+            return caixa.getNotasDe50();
+        }if (num == 20){
+            return caixa.getNotasDe20();
+        }if (num == 10){
+            return caixa.getNotasDe10();
+        }
+        return null;
+    }
     public Cliente depositar(DadosDeposito dados) {
         Cliente cliente = clienteRepository.getReferenceById(dados.idCliente());
         cliente.getConta().depositar(dados.valor());
